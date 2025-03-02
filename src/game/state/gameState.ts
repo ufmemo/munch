@@ -3,54 +3,112 @@ import { wouldCollide } from '../utils/gameLoop'
 import { MAZE_LAYOUT, MAZE_WIDTH, MAZE_HEIGHT } from '@utils/constants'
 
 type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' | null
+export type GameStatus = 'PLAYING' | 'GAME_OVER' | 'VICTORY'
 
 interface GameState {
   score: number
   lives: number
   level: number
+  gameStatus: GameStatus
   pacManPosition: { x: number; y: number }
   direction: Direction
   queuedDirection: Direction
   maze: number[][]
+  remainingDots: number
   update: () => void
+  resetGame: () => void
+  handleDeath: () => void
 }
 
-const useGameState = create<GameState>((set) => ({
+// Count initial dots and pellets
+function countInitialDots(): number {
+  let count = 0
+  for (let y = 0; y < MAZE_HEIGHT; y++) {
+    for (let x = 0; x < MAZE_WIDTH; x++) {
+      if (MAZE_LAYOUT[y][x] === 2 || MAZE_LAYOUT[y][x] === 3) {
+        count++
+      }
+    }
+  }
+  return count
+}
+
+const initialState = {
   score: 0,
   lives: 3,
   level: 1,
-  pacManPosition: { x: 14, y: 23 }, // Centered horizontally at column 14
-  direction: null,
-  queuedDirection: null,
-  maze: JSON.parse(JSON.stringify(MAZE_LAYOUT)), // Deep copy of initial maze
+  gameStatus: 'PLAYING' as GameStatus,
+  pacManPosition: { x: 14, y: 23 },
+  direction: null as Direction,
+  queuedDirection: null as Direction,
+  maze: JSON.parse(JSON.stringify(MAZE_LAYOUT)),
+  remainingDots: countInitialDots(),
+}
+
+const useGameState = create<GameState>((set) => ({
+  ...initialState,
   update: () => {
     set((state) => {
+      if (state.gameStatus !== 'PLAYING') return state
+
       // Get current grid position
       const x = Math.round(state.pacManPosition.x)
       const y = Math.round(state.pacManPosition.y)
 
+      let updates: Partial<GameState> = {}
+
       // Check if current position has a dot or power pellet
       if (x >= 0 && x < MAZE_WIDTH && y >= 0 && y < MAZE_HEIGHT) {
         const cell = state.maze[y][x]
-        if (cell === 2) {
-          // Regular dot
+        if (cell === 2 || cell === 3) {
           const newMaze = [...state.maze]
           newMaze[y][x] = 0 // Set to empty
-          return {
-            score: state.score + 10,
+          const points = cell === 2 ? 10 : 50 // 10 points for dots, 50 for power pellets
+          const newRemainingDots = state.remainingDots - 1
+
+          updates = {
+            score: state.score + points,
             maze: newMaze,
+            remainingDots: newRemainingDots,
           }
-        } else if (cell === 3) {
-          // Power pellet
-          const newMaze = [...state.maze]
-          newMaze[y][x] = 0 // Set to empty
-          return {
-            score: state.score + 50,
-            maze: newMaze,
+
+          // Check for victory
+          if (newRemainingDots === 0) {
+            updates.gameStatus = 'VICTORY'
+            updates.direction = null
+            updates.queuedDirection = null
           }
         }
       }
-      return state
+      return updates
+    })
+  },
+  resetGame: () => {
+    set({
+      ...initialState,
+      maze: JSON.parse(JSON.stringify(MAZE_LAYOUT)), // Create a fresh deep copy of the maze
+      remainingDots: countInitialDots(),
+    })
+  },
+  handleDeath: () => {
+    set((state) => {
+      const newLives = state.lives - 1
+      if (newLives <= 0) {
+        return {
+          ...state,
+          lives: 0,
+          gameStatus: 'GAME_OVER',
+          direction: null,
+          queuedDirection: null,
+        }
+      }
+      return {
+        ...state,
+        lives: newLives,
+        pacManPosition: { x: 14, y: 23 },
+        direction: null,
+        queuedDirection: null,
+      }
     })
   },
 }))
@@ -77,11 +135,7 @@ export function setDirection(newDirection: Direction) {
     Math.abs(state.pacManPosition.y - Math.round(state.pacManPosition.y)) < 0.2
 
   // If we're near a grid position and can turn without collision, do it immediately
-  if (
-    nearX &&
-    nearY &&
-    !wouldCollide(state.pacManPosition, newDirection as string)
-  ) {
+  if (nearX && nearY && !wouldCollide(state.pacManPosition, newDirection)) {
     setState({
       direction: newDirection,
       queuedDirection: null,

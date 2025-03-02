@@ -3,13 +3,13 @@ import styled from 'styled-components'
 import { TILE_SIZE, MAZE_WIDTH, MAZE_HEIGHT } from '@utils/constants'
 import PacMan from '@components/PacMan'
 import useGameState from '@state/gameState'
+import Scoreboard from '@components/Scoreboard'
 
 const BoardContainer = styled.div`
   width: ${MAZE_WIDTH * TILE_SIZE}px;
   height: ${MAZE_HEIGHT * TILE_SIZE}px;
   background-color: black;
   position: relative;
-  margin: auto;
 `
 
 const GameContainer = styled.div`
@@ -17,7 +17,10 @@ const GameContainer = styled.div`
   justify-content: center;
   align-items: center;
   height: 100vh;
+  width: 100vw;
   background-color: black;
+  position: relative;
+  overflow: hidden;
 `
 
 interface WallProps {
@@ -82,8 +85,73 @@ const DotContainer = styled.div`
   height: ${TILE_SIZE}px;
 `
 
+const GameMessageOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 100;
+  font-family: 'Arial', sans-serif;
+  font-size: 48px;
+  text-shadow: 2px 2px 4px #000;
+
+  &.victory {
+    color: #ffff00;
+  }
+
+  &.gameover {
+    color: red;
+  }
+
+  button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 24px;
+    background-color: #333;
+    color: white;
+    border: 2px solid #666;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: #444;
+      border-color: #888;
+    }
+  }
+`
+
 const Board: React.FC = () => {
-  const { pacManPosition, maze } = useGameState()
+  const { pacManPosition, maze, gameStatus, resetGame } = useGameState()
+  const [scale, setScale] = React.useState(0.9)
+
+  React.useEffect(() => {
+    const updateScale = () => {
+      const vw = Math.min(
+        window.innerWidth,
+        window.innerHeight * (MAZE_WIDTH / MAZE_HEIGHT),
+      )
+      const vh = Math.min(
+        window.innerHeight,
+        window.innerWidth * (MAZE_HEIGHT / MAZE_WIDTH),
+      )
+      const newScale = Math.min(
+        vw / (MAZE_WIDTH * TILE_SIZE),
+        vh / (MAZE_HEIGHT * TILE_SIZE),
+      )
+      setScale(newScale * 0.9) // Add 10% padding
+    }
+
+    window.addEventListener('resize', updateScale)
+    updateScale() // Initial calculation
+    return () => window.removeEventListener('resize', updateScale)
+  }, [])
 
   const hasWallAt = (x: number, y: number): boolean => {
     if (x < 0 || x >= MAZE_WIDTH || y < 0 || y >= MAZE_HEIGHT) return false
@@ -155,10 +223,19 @@ const Board: React.FC = () => {
 
   return (
     <GameContainer>
-      <BoardContainer>
+      <BoardContainer style={{ transform: `scale(${scale})` }}>
         {renderMaze()}
         <PacMan x={pacManPosition.x} y={pacManPosition.y} />
+        {(gameStatus === 'GAME_OVER' || gameStatus === 'VICTORY') && (
+          <GameMessageOverlay
+            className={gameStatus === 'VICTORY' ? 'victory' : 'gameover'}
+          >
+            <div>{gameStatus === 'VICTORY' ? 'YOU WIN!' : 'GAME OVER'}</div>
+            <button onClick={resetGame}>Play Again</button>
+          </GameMessageOverlay>
+        )}
       </BoardContainer>
+      <Scoreboard />
     </GameContainer>
   )
 }
