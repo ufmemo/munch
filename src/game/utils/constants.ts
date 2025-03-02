@@ -1,6 +1,13 @@
-export const TILE_SIZE = 24
+import { GameConfig } from '../types';
+export * from './mazeConstants';
 
-// 0: empty, 1: wall, 2: dot, 3: power pellet, 4: door
+export const TILE_SIZE = 24;
+
+// 0: empty
+// 1: wall
+// 2: dot
+// 3: power pellet
+// 4: door
 
 //prettier-ignore
 export const MAZE_LAYOUT = [
@@ -37,5 +44,41 @@ export const MAZE_LAYOUT = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ];
 
-export const MAZE_WIDTH = MAZE_LAYOUT[0].length
-export const MAZE_HEIGHT = MAZE_LAYOUT.length
+export const MAZE_WIDTH = MAZE_LAYOUT[0].length;
+export const MAZE_HEIGHT = MAZE_LAYOUT.length;
+
+export const GAME_CONFIG: GameConfig = {
+  initialLives: 3,
+  baseScore: {
+    dot: 10,
+    powerPellet: 50,
+    ghost: 200,
+  },
+  speedLevels: [
+    { pacman: 6, ghost: 4.5 }, // Level 1
+    { pacman: 7, ghost: 5.5 }, // Level 2
+    { pacman: 8, ghost: 6.5 }, // Level 3
+  ],
+};
+
+// Animation constants
+export const ANIMATION_SPEEDS = {
+  pacmanChomp: 0.25, // seconds
+  ghostFloat: 1.5, // seconds
+  deathSequence: 1, // seconds
+} as const;
+
+// CSS Colors
+export const COLORS = {
+  maze: {
+    wall: '#0000ff',
+    door: '#444',
+  },
+  ghosts: {
+    blinky: '#FF0000', // Red
+    pinky: '#FFB8FF', // Pink
+    inky: '#00FFFF', // Cyan
+    clyde: '#FFB851', // Orange
+    frightened: '#0000BB', // Blue
+  },
+} as const;

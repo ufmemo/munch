@@ -1,11 +1,14 @@
-import { GameStatus, setDirection } from '@state/gameState';
-import { getState } from '@state/gameState';
+import { getState, setDirection } from '@state/gameState';
+
+import { GameStatus } from '../types/gameStatus';
+import { Direction } from '../types/movement';
 
 export const keydownHandler =
-  (resetGame: () => void, gameStatus: GameStatus) => (event: KeyboardEvent) => {
+  (resetGame: () => void, gameStatus: GameStatus) =>
+  (event: KeyboardEvent): void => {
     const state = getState();
 
-    if (gameStatus === 'GAME_OVER' || gameStatus === 'VICTORY') {
+    if (gameStatus === GameStatus.GAME_OVER || gameStatus === GameStatus.VICTORY) {
       if (event.key === 'Enter' || event.key === ' ') {
         resetGame();
         return;
@@ -13,28 +16,31 @@ export const keydownHandler =
     }
 
     // Only allow pause toggle when in PLAYING or PAUSED state
-    if (event.key === ' ' && (gameStatus === 'PLAYING' || gameStatus === 'PAUSED')) {
+    if (
+      event.key === ' ' &&
+      (gameStatus === GameStatus.PLAYING || gameStatus === GameStatus.PAUSED)
+    ) {
       state.togglePause();
       return;
     }
 
     // Don't process movement keys if game is not in PLAYING state
-    if (gameStatus !== 'PLAYING') {
+    if (gameStatus !== GameStatus.PLAYING) {
       return;
     }
 
     switch (event.key) {
       case 'ArrowUp':
-        setDirection('UP');
+        setDirection(Direction.UP);
         break;
       case 'ArrowDown':
-        setDirection('DOWN');
+        setDirection(Direction.DOWN);
         break;
       case 'ArrowLeft':
-        setDirection('LEFT');
+        setDirection(Direction.LEFT);
         break;
       case 'ArrowRight':
-        setDirection('RIGHT');
+        setDirection(Direction.RIGHT);
         break;
       default:
         break;

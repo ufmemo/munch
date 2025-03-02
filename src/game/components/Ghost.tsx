@@ -1,13 +1,10 @@
 import React, { useEffect, useState, CSSProperties } from 'react';
 import styled, { keyframes } from 'styled-components';
 
+import useGameState from '@state/gameState';
 import { TILE_SIZE } from '@utils/constants';
 
-import useGameState, { Direction } from '../state/gameState';
-
-// Define the Direction type here if it's not imported
-
-export type GhostMode = 'CHASE' | 'SCATTER' | 'FRIGHTENED';
+import { Direction } from '../types/movement';
 
 interface GhostProps {
   id: number;
@@ -56,13 +53,13 @@ const EyeWhite = styled.circle`
 
 const getDirectionTransform = (direction: Direction): string => {
   switch (direction) {
-    case 'UP':
+    case Direction.UP:
       return 'translateY(-1px)';
-    case 'DOWN':
+    case Direction.DOWN:
       return 'translateY(1px)';
-    case 'LEFT':
+    case Direction.LEFT:
       return 'translateX(-1px)';
-    case 'RIGHT':
+    case Direction.RIGHT:
       return 'translateX(1px)';
     default:
       return 'translate(0)';
@@ -124,16 +121,5 @@ const Ghost: React.FC<GhostProps> = ({ id }) => {
     </GhostContainer>
   );
 };
-
-// Add ghost data type
-export interface GhostState {
-  id: number;
-  x: number;
-  y: number;
-  direction: Direction;
-  color: string;
-  speed: number;
-  mode: GhostMode;
-}
 
 export default Ghost;

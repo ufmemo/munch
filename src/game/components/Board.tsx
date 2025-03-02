@@ -4,8 +4,9 @@ import styled from 'styled-components';
 import Ghost from '@components/Ghost';
 import PacMan from '@components/PacMan';
 import Scoreboard from '@components/Scoreboard';
+import { GameStatus } from '@game/types/gameStatus';
 import useGameState from '@state/gameState';
-import { TILE_SIZE, MAZE_WIDTH, MAZE_HEIGHT } from '@utils/constants';
+import { TILE_SIZE, MAZE_WIDTH, MAZE_HEIGHT, COLORS, MazeCell } from '@utils/constants';
 
 const BoardContainer = styled.div`
   width: ${MAZE_WIDTH * TILE_SIZE}px;
@@ -43,7 +44,7 @@ const Wall = styled.div<WallProps>`
   border-style: solid;
   border-width: ${(props) => (props.$top ? '2px' : '0')} ${(props) => (props.$right ? '2px' : '0')}
     ${(props) => (props.$bottom ? '2px' : '0')} ${(props) => (props.$left ? '2px' : '0')};
-  border-color: #0000ff;
+  border-color: ${COLORS.maze.wall};
   box-sizing: border-box;
   border-top-left-radius: ${(props) => (props.$topLeft ? '25%' : '0')};
   border-top-right-radius: ${(props) => (props.$topRight ? '25%' : '0')};
@@ -57,9 +58,9 @@ const Door = styled.div`
   width: ${TILE_SIZE}px;
   height: ${TILE_SIZE / 2}px;
   transform: translateY(${TILE_SIZE / 4}px);
-  background-color: #444;
+  background-color: ${COLORS.maze.door};
   box-sizing: border-box;
-  border: 2px solid #444;
+  border: 2px solid ${COLORS.maze.door};
 `;
 
 const Dot = styled.div`
@@ -156,7 +157,7 @@ const Board = (): JSX.Element => {
 
   const hasWallAt = (x: number, y: number): boolean => {
     if (x < 0 || x >= MAZE_WIDTH || y < 0 || y >= MAZE_HEIGHT) return false;
-    return maze[y][x] === 1;
+    return maze[y][x] === MazeCell.WALL;
   };
 
   const isCorner = (x: number, y: number, side1: boolean, side2: boolean): boolean =>
@@ -176,7 +177,7 @@ const Board = (): JSX.Element => {
         const left = !hasWallAt(x - 1, y);
 
         switch (cellType) {
-          case 1: // Wall
+          case MazeCell.WALL: // Wall
             elements.push(
               <Wall
                 key={`wall-${x}-${y}`}
@@ -192,21 +193,21 @@ const Board = (): JSX.Element => {
               />,
             );
             break;
-          case 2: // Dot
+          case MazeCell.DOT: // Dot
             elements.push(
               <DotContainer key={`dot-${x}-${y}`} style={position}>
                 <Dot />
               </DotContainer>,
             );
             break;
-          case 3: // Power Pellet
+          case MazeCell.POWER_PELLET: // Power Pellet
             elements.push(
               <DotContainer key={`power-${x}-${y}`} style={position}>
                 <PowerPellet />
               </DotContainer>,
             );
             break;
-          case 4: // Door
+          case MazeCell.DOOR: // Door
             elements.push(<Door key={`door-${x}-${y}`} style={position} />);
             break;
         }
@@ -223,11 +224,11 @@ const Board = (): JSX.Element => {
   // Get appropriate class for message overlay
   const getOverlayClass = (): string => {
     switch (gameStatus) {
-      case 'VICTORY':
+      case GameStatus.VICTORY:
         return 'victory';
-      case 'GAME_OVER':
+      case GameStatus.GAME_OVER:
         return 'gameover';
-      case 'DYING':
+      case GameStatus.DYING:
         return 'dying';
       default:
         return 'paused';
@@ -237,11 +238,11 @@ const Board = (): JSX.Element => {
   // Get appropriate message for overlay
   const getOverlayMessage = (): string => {
     switch (gameStatus) {
-      case 'VICTORY':
+      case GameStatus.VICTORY:
         return 'YOU WIN!';
-      case 'GAME_OVER':
+      case GameStatus.GAME_OVER:
         return 'GAME OVER';
-      case 'DYING':
+      case GameStatus.DYING:
         return 'OUCH!';
       default:
         return 'PAUSED';
@@ -254,10 +255,10 @@ const Board = (): JSX.Element => {
         {renderMaze()}
         <PacMan x={pacManPosition.x} y={pacManPosition.y} />
         {renderGhosts()}
-        {gameStatus !== 'PLAYING' && (
+        {gameStatus !== GameStatus.PLAYING && (
           <GameMessageOverlay className={getOverlayClass()}>
             <div>{getOverlayMessage()}</div>
-            {(gameStatus === 'GAME_OVER' || gameStatus === 'VICTORY') && (
+            {(gameStatus === GameStatus.GAME_OVER || gameStatus === GameStatus.VICTORY) && (
               <button onClick={resetGame}>Play Again</button>
             )}
           </GameMessageOverlay>

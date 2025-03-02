@@ -2,7 +2,7 @@ import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
 import useGameState from '@state/gameState';
-import { TILE_SIZE } from '@utils/constants';
+import { TILE_SIZE, ANIMATION_SPEEDS } from '@utils/constants';
 
 const chomp = keyframes`
   0% {
@@ -54,21 +54,21 @@ const PacManContainer = styled.div<{ $direction: string | null }>`
 
 const PacManMouth = styled.path`
   fill: black;
-  animation: ${chomp} 0.25s linear infinite;
+  animation: ${chomp} ${ANIMATION_SPEEDS.pacmanChomp}s linear infinite;
 `;
 
 const PacMan: React.FC<{ x: number; y: number }> = ({ x, y }) => {
   const { direction } = useGameState();
   const posX = x * TILE_SIZE;
   const posY = y * TILE_SIZE;
-  
+
   return (
-    <PacManContainer 
+    <PacManContainer
       $direction={direction}
-      style={{ 
+      style={{
         left: `${posX}px`,
-        top: `${posY}px`
-      }} 
+        top: `${posY}px`,
+      }}
     >
       <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
         <circle cx="8" cy="8" r="8" fill="yellow" />

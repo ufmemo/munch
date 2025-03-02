@@ -1,170 +1,135 @@
+import { GameStatus } from '@game/types/gameStatus';
+import { Direction } from '@game/types/movement';
+import { Position } from '@game/types/position';
 import { getState, setState } from '@state/gameState';
-import { MAZE_WIDTH, MAZE_HEIGHT } from '@utils/constants';
+import { MAZE_WIDTH, MAZE_HEIGHT, GAME_CONFIG, MazeCell } from '@utils/constants';
 
 let lastTime = 0;
-let speed = 6; // Default speed in tiles per second
+let speed = GAME_CONFIG.speedLevels[0].pacman;
 
-// Check if a position would result in a collision in the specified direction
-function checkCollision(x: number, y: number, direction: string | null = null): boolean {
+function checkCollision(pos: Position, direction: Direction | null = null): boolean {
   const state = getState();
-
-  // Get the grid positions for corners based on direction
-  let positions: { x: number; y: number }[] = [];
+  let positions: Position[] = [];
 
   if (direction) {
     // Only check corners in the direction of movement
     switch (direction) {
-      case 'UP':
-        // Check top corners only
+      case Direction.UP:
         positions = [
-          { x: Math.floor(x), y: Math.floor(y) }, // Top-left
-          { x: Math.ceil(x), y: Math.floor(y) }, // Top-right
+          { x: Math.floor(pos.x), y: Math.floor(pos.y) },
+          { x: Math.ceil(pos.x), y: Math.floor(pos.y) },
         ];
         break;
-      case 'DOWN':
-        // Check bottom corners only
+      case Direction.DOWN:
         positions = [
-          { x: Math.floor(x), y: Math.ceil(y) }, // Bottom-left
-          { x: Math.ceil(x), y: Math.ceil(y) }, // Bottom-right
+          { x: Math.floor(pos.x), y: Math.ceil(pos.y) },
+          { x: Math.ceil(pos.x), y: Math.ceil(pos.y) },
         ];
         break;
-      case 'LEFT':
-        // Check left corners only
+      case Direction.LEFT:
         positions = [
-          { x: Math.floor(x), y: Math.floor(y) }, // Top-left
-          { x: Math.floor(x), y: Math.ceil(y) }, // Bottom-left
+          { x: Math.floor(pos.x), y: Math.floor(pos.y) },
+          { x: Math.floor(pos.x), y: Math.ceil(pos.y) },
         ];
         break;
-      case 'RIGHT':
-        // Check right corners only
+      case Direction.RIGHT:
         positions = [
-          { x: Math.ceil(x), y: Math.floor(y) }, // Top-right
-          { x: Math.ceil(x), y: Math.ceil(y) }, // Bottom-right
+          { x: Math.ceil(pos.x), y: Math.floor(pos.y) },
+          { x: Math.ceil(pos.x), y: Math.ceil(pos.y) },
         ];
         break;
-      default:
-        // No direction specified, fallback to checking all corners
-        positions = [
-          { x: Math.floor(x), y: Math.floor(y) }, // Top-left
-          { x: Math.ceil(x), y: Math.floor(y) }, // Top-right
-          { x: Math.floor(x), y: Math.ceil(y) }, // Bottom-left
-          { x: Math.ceil(x), y: Math.ceil(y) }, // Bottom-right
-        ];
     }
   } else {
-    // If no direction specified, check all corners (for backward compatibility)
     positions = [
-      { x: Math.floor(x), y: Math.floor(y) }, // Top-left
-      { x: Math.ceil(x), y: Math.floor(y) }, // Top-right
-      { x: Math.floor(x), y: Math.ceil(y) }, // Bottom-left
-      { x: Math.ceil(x), y: Math.ceil(y) }, // Bottom-right
+      { x: Math.floor(pos.x), y: Math.floor(pos.y) },
+      { x: Math.ceil(pos.x), y: Math.floor(pos.y) },
+      { x: Math.floor(pos.x), y: Math.ceil(pos.y) },
+      { x: Math.ceil(pos.x), y: Math.ceil(pos.y) },
     ];
   }
 
-  // Check if any corner is in a wall or door
   return positions.some((pos) => {
-    // Handle wrapping for edge positions
     let checkX = pos.x;
     let checkY = pos.y;
 
-    // Wrap around horizontally if at edges
     if (checkX < 0) checkX = MAZE_WIDTH - 1;
     if (checkX >= MAZE_WIDTH) checkX = 0;
-
-    // Wrap around vertically if at edges
     if (checkY < 0) checkY = MAZE_HEIGHT - 1;
     if (checkY >= MAZE_HEIGHT) checkY = 0;
 
     const cell = state.maze[checkY][checkX];
-    return cell === 1 || cell === 4; // 1 is wall, 4 is door
+    return cell === MazeCell.WALL || cell === MazeCell.DOOR;
   });
 }
 
-// Check if moving one step in a direction would cause a collision
-export function wouldCollide(pos: { x: number; y: number }, direction: string): boolean {
+export function wouldCollide(pos: Position, direction: Direction): boolean {
   const testPos = { ...pos };
-  const step = 1; // Test one full tile ahead
+  const step = 1;
 
   switch (direction) {
-    case 'UP':
+    case Direction.UP:
       testPos.y -= step;
       break;
-    case 'DOWN':
+    case Direction.DOWN:
       testPos.y += step;
       break;
-    case 'LEFT':
+    case Direction.LEFT:
       testPos.x -= step;
       break;
-    case 'RIGHT':
+    case Direction.RIGHT:
       testPos.x += step;
       break;
-    default:
-      return false;
   }
 
-  return checkCollision(testPos.x, testPos.y, direction);
+  return checkCollision(testPos, direction);
 }
 
-// Try to move in the current direction, returns true if movement was possible
-function tryMove(
-  currentPos: { x: number; y: number },
-  direction: string,
-  amount: number,
-): { x: number; y: number } | null {
-  const newPos = { ...currentPos };
+function tryMove(pos: Position, direction: Direction, amount: number): Position | null {
+  const newPos = { ...pos };
 
   switch (direction) {
-    case 'UP':
+    case Direction.UP:
       newPos.y -= amount;
       break;
-    case 'DOWN':
+    case Direction.DOWN:
       newPos.y += amount;
       break;
-    case 'LEFT':
+    case Direction.LEFT:
       newPos.x -= amount;
       break;
-    case 'RIGHT':
+    case Direction.RIGHT:
       newPos.x += amount;
       break;
-    default:
-      return null;
   }
 
   // Handle wrapping at edges
   if (newPos.x < 0) {
-    // Check if the rightmost position is not a wall
-    if (!checkCollision(MAZE_WIDTH - 1, newPos.y, direction)) {
+    if (!checkCollision({ ...newPos, x: MAZE_WIDTH - 1 }, direction)) {
       newPos.x = MAZE_WIDTH - 1;
     }
   } else if (newPos.x >= MAZE_WIDTH) {
-    // Check if the leftmost position is not a wall
-    if (!checkCollision(0, newPos.y, direction)) {
+    if (!checkCollision({ ...newPos, x: 0 }, direction)) {
       newPos.x = 0;
     }
   }
 
   if (newPos.y < 0) {
-    // Check if the bottom position is not a wall
-    if (!checkCollision(newPos.x, MAZE_HEIGHT - 1, direction)) {
+    if (!checkCollision({ ...newPos, y: MAZE_HEIGHT - 1 }, direction)) {
       newPos.y = MAZE_HEIGHT - 1;
     }
   } else if (newPos.y >= MAZE_HEIGHT) {
-    // Check if the top position is not a wall
-    if (!checkCollision(newPos.x, 0, direction)) {
+    if (!checkCollision({ ...newPos, y: 0 }, direction)) {
       newPos.y = 0;
     }
   }
 
-  // Check if new position would cause a collision
-  if (checkCollision(newPos.x, newPos.y, direction)) {
-    // If we would hit a wall, try to align to grid
+  if (checkCollision(newPos, direction)) {
     const alignedPos = {
-      x: Math.round(currentPos.x),
-      y: Math.round(currentPos.y),
+      x: Math.round(pos.x),
+      y: Math.round(pos.y),
     };
 
-    // Only return aligned position if it doesn't cause a collision
-    if (!checkCollision(alignedPos.x, alignedPos.y, direction)) {
+    if (!checkCollision(alignedPos, direction)) {
       return alignedPos;
     }
     return null;
@@ -173,39 +138,31 @@ function tryMove(
   return newPos;
 }
 
-// Add this new function to check if we can make a turn at the current position
-function canTurnAtPosition(pos: { x: number; y: number }, direction: string): boolean {
-  // Convert position to grid coordinates
+function canTurnAtPosition(pos: Position, direction: Direction): boolean {
   const gridX = Math.round(pos.x);
   const gridY = Math.round(pos.y);
-
-  // Check if the desired direction is clear
   const testPos = { x: gridX, y: gridY };
   return !wouldCollide(testPos, direction);
 }
 
 function gameLoop(time: number): void {
-  const deltaTime = Math.min((time - lastTime) / 1000, 0.1); // Cap at 100ms to prevent large jumps
+  const deltaTime = Math.min((time - lastTime) / 1000, 0.1);
   lastTime = time;
 
   const state = getState();
 
-  // Stop processing movement if game is not in PLAYING state
-  if (state.gameStatus !== 'PLAYING') {
+  if (state.gameStatus !== GameStatus.PLAYING) {
     requestAnimationFrame(gameLoop);
     return;
   }
 
   const moveAmount = speed * deltaTime;
 
-  // Handle queued direction first
   if (state.queuedDirection) {
     const nearX = Math.abs(state.pacManPosition.x - Math.round(state.pacManPosition.x)) < 0.2;
     const nearY = Math.abs(state.pacManPosition.y - Math.round(state.pacManPosition.y)) < 0.2;
 
-    // Try to turn if we're near a grid position and the path is clear
     if (nearX && nearY && canTurnAtPosition(state.pacManPosition, state.queuedDirection)) {
-      // Snap to grid when turning to prevent path drift
       setState({
         direction: state.queuedDirection,
         queuedDirection: null,
@@ -221,27 +178,23 @@ function gameLoop(time: number): void {
     const newPosition = tryMove(state.pacManPosition, state.direction, moveAmount);
     if (newPosition) {
       setState({ pacManPosition: newPosition });
-      // Check for dot collection after movement
       state.update();
-    } else {
-      // We hit a wall, try the queued direction if we have one
-      if (state.queuedDirection && canTurnAtPosition(state.pacManPosition, state.queuedDirection)) {
-        setState({
-          direction: state.queuedDirection,
-          queuedDirection: null,
-          pacManPosition: {
-            x: Math.round(state.pacManPosition.x),
-            y: Math.round(state.pacManPosition.y),
-          },
-        });
-      }
+    } else if (
+      state.queuedDirection &&
+      canTurnAtPosition(state.pacManPosition, state.queuedDirection)
+    ) {
+      setState({
+        direction: state.queuedDirection,
+        queuedDirection: null,
+        pacManPosition: {
+          x: Math.round(state.pacManPosition.x),
+          y: Math.round(state.pacManPosition.y),
+        },
+      });
     }
   }
 
-  // Update ghost positions
   state.updateGhosts(deltaTime);
-
-  // Request next frame
   requestAnimationFrame(gameLoop);
 }
 
@@ -250,14 +203,11 @@ export function startGameLoop(): void {
   requestAnimationFrame(gameLoop);
 }
 
-export function stopGameLoop(): void {
-  // Could add cancelAnimationFrame here if needed
-}
-
 export function setSpeed(newSpeed: number): void {
-  // Clamp speed between 1 and 10 tiles per second
-  speed = Math.max(1, Math.min(10, newSpeed));
+  speed = Math.max(
+    GAME_CONFIG.speedLevels[0].pacman,
+    Math.min(GAME_CONFIG.speedLevels[2].pacman, newSpeed),
+  );
 }
 
-// Start the game loop
 startGameLoop();
