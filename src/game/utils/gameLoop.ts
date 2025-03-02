@@ -14,6 +14,8 @@ function checkCollision(x: number, y: number): boolean {
     { x: Math.ceil(x), y: Math.ceil(y) }, // Bottom-right
   ]
 
+  const state = getState()
+
   // Check if any corner is in a wall or door
   return positions.some((pos) => {
     // Handle wrapping for edge positions
@@ -28,7 +30,7 @@ function checkCollision(x: number, y: number): boolean {
     if (checkY < 0) checkY = MAZE_HEIGHT - 1
     if (checkY >= MAZE_HEIGHT) checkY = 0
 
-    const cell = MAZE_LAYOUT[checkY][checkX]
+    const cell = state.maze[checkY][checkX]
     return cell === 1 || cell === 4 // 1 is wall, 4 is door
   })
 }
@@ -185,6 +187,8 @@ function gameLoop(time: number) {
     )
     if (newPosition) {
       setState({ pacManPosition: newPosition })
+      // Check for dot collection after movement
+      state.update()
     } else {
       // We hit a wall, try the queued direction if we have one
       if (

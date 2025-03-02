@@ -1,11 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import {
-  TILE_SIZE,
-  MAZE_WIDTH,
-  MAZE_HEIGHT,
-  MAZE_LAYOUT,
-} from '@utils/constants'
+import { TILE_SIZE, MAZE_WIDTH, MAZE_HEIGHT } from '@utils/constants'
 import PacMan from '@components/PacMan'
 import useGameState from '@state/gameState'
 
@@ -70,8 +65,6 @@ const Dot = styled.div`
   height: 4px;
   background-color: yellow;
   border-radius: 50%;
-  left: 50%;
-  top: 50%;
   transform: translate(-50%, -50%);
 `
 
@@ -80,12 +73,21 @@ const PowerPellet = styled(Dot)`
   height: 8px;
 `
 
+const DotContainer = styled.div`
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: ${TILE_SIZE}px;
+  height: ${TILE_SIZE}px;
+`
+
 const Board: React.FC = () => {
-  const { pacManPosition } = useGameState()
+  const { pacManPosition, maze } = useGameState()
 
   const hasWallAt = (x: number, y: number): boolean => {
     if (x < 0 || x >= MAZE_WIDTH || y < 0 || y >= MAZE_HEIGHT) return false
-    return MAZE_LAYOUT[y][x] === 1
+    return maze[y][x] === 1
   }
 
   const isCorner = (
@@ -102,7 +104,7 @@ const Board: React.FC = () => {
 
     for (let y = 0; y < MAZE_HEIGHT; y++) {
       for (let x = 0; x < MAZE_WIDTH; x++) {
-        const cellType = MAZE_LAYOUT[y][x]
+        const cellType = maze[y][x]
         const position = { left: x * TILE_SIZE, top: y * TILE_SIZE }
 
         switch (cellType) {
@@ -129,16 +131,16 @@ const Board: React.FC = () => {
             break
           case 2: // Dot
             elements.push(
-              <div key={`dot-${x}-${y}`} style={position}>
+              <DotContainer key={`dot-${x}-${y}`} style={position}>
                 <Dot />
-              </div>,
+              </DotContainer>,
             )
             break
           case 3: // Power Pellet
             elements.push(
-              <div key={`power-${x}-${y}`} style={position}>
+              <DotContainer key={`power-${x}-${y}`} style={position}>
                 <PowerPellet />
-              </div>,
+              </DotContainer>,
             )
             break
           case 4: // Door
