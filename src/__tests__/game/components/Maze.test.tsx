@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react';
-import Maze from './Maze';
+import Maze from '@components/Maze';
 
 test('renders Maze component', () => {
   const { getByText } = render(<Maze />);

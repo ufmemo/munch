@@ -17,7 +17,7 @@ const useGameState = create<GameState>((set) => ({
   score: 0,
   lives: 3,
   level: 1,
-  pacManPosition: { x: 14, y: 23 }, // Start position in a valid corridor
+  pacManPosition: { x: 14, y: 23 }, // Centered horizontally at column 14
   direction: null,
   queuedDirection: null,
   update: () => {

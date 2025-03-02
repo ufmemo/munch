@@ -1,4 +1,4 @@
-import useGameState from './gameState';
+import useGameState from '@state/gameState';
 
 test('initial game state', () => {
   const state = useGameState.getState();

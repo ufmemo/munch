@@ -1,7 +1,7 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
-import { TILE_SIZE } from '../utils/constants';
-import useGameState from '../state/gameState';
+import { TILE_SIZE } from '@utils/constants';
+import useGameState from '@state/gameState';
 
 const chomp = keyframes`
   0% {

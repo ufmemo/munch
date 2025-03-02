@@ -1,75 +1,72 @@
-import React, { useEffect } from 'react';
-import { startGameLoop, stopGameLoop, setSpeed } from './game/utils/gameLoop';
-import './App.css';
-import styled from 'styled-components';
-import PacMan from './game/components/PacMan';
-import Ghost from './game/components/Ghost';
-import Maze from './game/components/Maze';
-import Board from './game/components/Board';
-import useGameState, { setDirection } from './game/state/gameState';
+import React, { useEffect } from 'react'
+import { startGameLoop, stopGameLoop, setSpeed } from '@utils/gameLoop'
+import './App.css'
+import styled from 'styled-components'
+import PacMan from '@components/PacMan'
+import Ghost from '@components/Ghost'
+import Maze from '@components/Maze'
+import Board from '@components/Board'
+import useGameState, { setDirection } from '@state/gameState'
 
 // Styled component
 const Container = styled.div`
   text-align: center;
-`;
+`
 
 function App() {
-  const { score, lives, level } = useGameState();
+  const { score, lives, level } = useGameState()
 
   useEffect(() => {
-    startGameLoop();
+    startGameLoop()
     return () => {
-      stopGameLoop();
-    };
-  }, []);
+      stopGameLoop()
+    }
+  }, [])
 
   const handleKeyDown = (event: KeyboardEvent) => {
     switch (event.key) {
       case 'ArrowUp':
-        setDirection('UP');
-        break;
+        setDirection('UP')
+        break
       case 'ArrowDown':
-        setDirection('DOWN');
-        break;
+        setDirection('DOWN')
+        break
       case 'ArrowLeft':
-        setDirection('LEFT');
-        break;
+        setDirection('LEFT')
+        break
       case 'ArrowRight':
-        setDirection('RIGHT');
-        break;
+        setDirection('RIGHT')
+        break
       default:
-        break;
+        break
     }
-  };
+  }
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown)
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
 
   useEffect(() => {
     const preventDefault = (e: KeyboardEvent) => {
       if (['ArrowUp', 'ArrowDown'].includes(e.key)) {
-        e.preventDefault();
+        e.preventDefault()
       }
-    };
-    window.addEventListener('keydown', preventDefault);
+    }
+    window.addEventListener('keydown', preventDefault)
     return () => {
-      window.removeEventListener('keydown', preventDefault);
-    };
-  }, []);
+      window.removeEventListener('keydown', preventDefault)
+    }
+  }, [])
 
   const handleSpeedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSpeed(Number(event.target.value));
-  };
+    setSpeed(Number(event.target.value))
+  }
 
   return (
     <Container>
-      <Maze />
-      <PacMan x={1} y={1} />
-      <Ghost />
       <Board />
       <div>Score: {score}</div>
       <div>Lives: {lives}</div>
@@ -88,7 +85,7 @@ function App() {
         />
       </div>
     </Container>
-  );
+  )
 }
 
-export default App;
+export default App
