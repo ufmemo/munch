@@ -1,6 +1,7 @@
 import React, { JSX, useEffect } from 'react';
 import styled from 'styled-components';
 
+import Ghost from '@components/Ghost';
 import PacMan from '@components/PacMan';
 import Scoreboard from '@components/Scoreboard';
 import useGameState from '@state/gameState';
@@ -108,6 +109,15 @@ const GameMessageOverlay = styled.div`
     color: red;
   }
 
+  &.paused {
+    color: white;
+  }
+
+  &.dying {
+    color: orange;
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+
   button {
     margin-top: 20px;
     padding: 10px 20px;
@@ -128,7 +138,7 @@ const GameMessageOverlay = styled.div`
 `;
 
 const Board = (): JSX.Element => {
-  const { pacManPosition, maze, gameStatus, resetGame } = useGameState();
+  const { pacManPosition, maze, gameStatus, resetGame, ghosts } = useGameState();
   const [scale, setScale] = React.useState(0.9);
 
   useEffect(() => {
@@ -206,15 +216,50 @@ const Board = (): JSX.Element => {
     return elements;
   };
 
+  // Render ghosts from game state
+  const renderGhosts = (): JSX.Element[] =>
+    ghosts.map((ghost) => <Ghost key={`ghost-${ghost.id}`} id={ghost.id} />);
+
+  // Get appropriate class for message overlay
+  const getOverlayClass = (): string => {
+    switch (gameStatus) {
+      case 'VICTORY':
+        return 'victory';
+      case 'GAME_OVER':
+        return 'gameover';
+      case 'DYING':
+        return 'dying';
+      default:
+        return 'paused';
+    }
+  };
+
+  // Get appropriate message for overlay
+  const getOverlayMessage = (): string => {
+    switch (gameStatus) {
+      case 'VICTORY':
+        return 'YOU WIN!';
+      case 'GAME_OVER':
+        return 'GAME OVER';
+      case 'DYING':
+        return 'OUCH!';
+      default:
+        return 'PAUSED';
+    }
+  };
+
   return (
     <GameContainer>
       <BoardContainer style={{ transform: `scale(${scale})` }}>
         {renderMaze()}
         <PacMan x={pacManPosition.x} y={pacManPosition.y} />
-        {(gameStatus === 'GAME_OVER' || gameStatus === 'VICTORY') && (
-          <GameMessageOverlay className={gameStatus === 'VICTORY' ? 'victory' : 'gameover'}>
-            <div>{gameStatus === 'VICTORY' ? 'YOU WIN!' : 'GAME OVER'}</div>
-            <button onClick={resetGame}>Play Again</button>
+        {renderGhosts()}
+        {gameStatus !== 'PLAYING' && (
+          <GameMessageOverlay className={getOverlayClass()}>
+            <div>{getOverlayMessage()}</div>
+            {(gameStatus === 'GAME_OVER' || gameStatus === 'VICTORY') && (
+              <button onClick={resetGame}>Play Again</button>
+            )}
           </GameMessageOverlay>
         )}
       </BoardContainer>

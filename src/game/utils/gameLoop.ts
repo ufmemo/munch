@@ -190,8 +190,8 @@ function gameLoop(time: number): void {
 
   const state = getState();
 
-  // Stop processing movement if game is over or won
-  if (state.gameStatus === 'GAME_OVER' || state.gameStatus === 'VICTORY') {
+  // Stop processing movement if game is not in PLAYING state
+  if (state.gameStatus !== 'PLAYING') {
     requestAnimationFrame(gameLoop);
     return;
   }
@@ -237,6 +237,9 @@ function gameLoop(time: number): void {
       }
     }
   }
+
+  // Update ghost positions
+  state.updateGhosts(deltaTime);
 
   // Request next frame
   requestAnimationFrame(gameLoop);
