@@ -1,6 +1,7 @@
-import React from 'react'
-import styled from 'styled-components'
-import useGameState from '@state/gameState'
+import React from 'react';
+import styled from 'styled-components';
+
+import useGameState from '@state/gameState';
 
 const ScoreboardContainer = styled.div`
   position: fixed;
@@ -11,10 +12,10 @@ const ScoreboardContainer = styled.div`
   padding: 16px;
   border: 2px solid #0000ff;
   border-radius: 8px;
-  font-family: 'Arial', sans-serif;
+  font-family: 'Silkscreen', cursive;
   min-width: 120px;
   z-index: 1000;
-`
+`;
 
 const ScoreItem = styled.div`
   margin: 8px 0;
@@ -29,10 +30,10 @@ const ScoreItem = styled.div`
   span:last-child {
     color: white;
   }
-`
+`;
 
 const Scoreboard: React.FC = () => {
-  const { score, lives, level } = useGameState()
+  const { score, lives, level } = useGameState();
 
   return (
     <ScoreboardContainer>
@@ -49,7 +50,7 @@ const Scoreboard: React.FC = () => {
         <span>{level}</span>
       </ScoreItem>
     </ScoreboardContainer>
-  )
-}
+  );
+};
 
-export default Scoreboard
+export default Scoreboard;

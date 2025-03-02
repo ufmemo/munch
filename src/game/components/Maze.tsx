@@ -5,8 +5,6 @@ const MazeContainer = styled.div`
   /* Add Maze styling here */
 `;
 
-const Maze: React.FC = () => {
-  return <MazeContainer>Maze</MazeContainer>;
-};
+const Maze: React.FC = () => <MazeContainer>Maze</MazeContainer>;
 
 export default Maze;

@@ -5,8 +5,6 @@ const GhostContainer = styled.div`
   /* Add Ghost styling here */
 `;
 
-const Ghost: React.FC = () => {
-  return <GhostContainer>Ghost</GhostContainer>;
-};
+const Ghost: React.FC = () => <GhostContainer>Ghost</GhostContainer>;
 
 export default Ghost;

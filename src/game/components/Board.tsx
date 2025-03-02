@@ -1,16 +1,17 @@
-import React from 'react'
-import styled from 'styled-components'
-import { TILE_SIZE, MAZE_WIDTH, MAZE_HEIGHT } from '@utils/constants'
-import PacMan from '@components/PacMan'
-import useGameState from '@state/gameState'
-import Scoreboard from '@components/Scoreboard'
+import React, { JSX, useEffect } from 'react';
+import styled from 'styled-components';
+
+import PacMan from '@components/PacMan';
+import Scoreboard from '@components/Scoreboard';
+import useGameState from '@state/gameState';
+import { TILE_SIZE, MAZE_WIDTH, MAZE_HEIGHT } from '@utils/constants';
 
 const BoardContainer = styled.div`
   width: ${MAZE_WIDTH * TILE_SIZE}px;
   height: ${MAZE_HEIGHT * TILE_SIZE}px;
   background-color: black;
   position: relative;
-`
+`;
 
 const GameContainer = styled.div`
   display: flex;
@@ -21,17 +22,17 @@ const GameContainer = styled.div`
   background-color: black;
   position: relative;
   overflow: hidden;
-`
+`;
 
 interface WallProps {
-  $top: boolean
-  $right: boolean
-  $bottom: boolean
-  $left: boolean
-  $topLeft: boolean
-  $topRight: boolean
-  $bottomLeft: boolean
-  $bottomRight: boolean
+  $top: boolean;
+  $right: boolean;
+  $bottom: boolean;
+  $left: boolean;
+  $topLeft: boolean;
+  $topRight: boolean;
+  $bottomLeft: boolean;
+  $bottomRight: boolean;
 }
 
 const Wall = styled.div<WallProps>`
@@ -39,10 +40,8 @@ const Wall = styled.div<WallProps>`
   width: ${TILE_SIZE}px;
   height: ${TILE_SIZE}px;
   border-style: solid;
-  border-width: ${(props) => (props.$top ? '2px' : '0')}
-    ${(props) => (props.$right ? '2px' : '0')}
-    ${(props) => (props.$bottom ? '2px' : '0')}
-    ${(props) => (props.$left ? '2px' : '0')};
+  border-width: ${(props) => (props.$top ? '2px' : '0')} ${(props) => (props.$right ? '2px' : '0')}
+    ${(props) => (props.$bottom ? '2px' : '0')} ${(props) => (props.$left ? '2px' : '0')};
   border-color: #0000ff;
   box-sizing: border-box;
   border-top-left-radius: ${(props) => (props.$topLeft ? '25%' : '0')};
@@ -50,7 +49,7 @@ const Wall = styled.div<WallProps>`
   border-bottom-left-radius: ${(props) => (props.$bottomLeft ? '25%' : '0')};
   border-bottom-right-radius: ${(props) => (props.$bottomRight ? '25%' : '0')};
   filter: blur(1px);
-`
+`;
 
 const Door = styled.div`
   position: absolute;
@@ -60,7 +59,7 @@ const Door = styled.div`
   background-color: #444;
   box-sizing: border-box;
   border: 2px solid #444;
-`
+`;
 
 const Dot = styled.div`
   position: absolute;
@@ -69,12 +68,12 @@ const Dot = styled.div`
   background-color: yellow;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-`
+`;
 
 const PowerPellet = styled(Dot)`
   width: 8px;
   height: 8px;
-`
+`;
 
 const DotContainer = styled.div`
   position: absolute;
@@ -83,7 +82,7 @@ const DotContainer = styled.div`
   align-items: center;
   width: ${TILE_SIZE}px;
   height: ${TILE_SIZE}px;
-`
+`;
 
 const GameMessageOverlay = styled.div`
   position: absolute;
@@ -97,7 +96,7 @@ const GameMessageOverlay = styled.div`
   align-items: center;
   background-color: rgba(0, 0, 0, 0.7);
   z-index: 100;
-  font-family: 'Arial', sans-serif;
+  font-family: 'Silkscreen', cursive;
   font-size: 48px;
   text-shadow: 2px 2px 4px #000;
 
@@ -113,6 +112,7 @@ const GameMessageOverlay = styled.div`
     margin-top: 20px;
     padding: 10px 20px;
     font-size: 24px;
+    font-family: 'Silkscreen', cursive;
     background-color: #333;
     color: white;
     border: 2px solid #666;
@@ -125,63 +125,48 @@ const GameMessageOverlay = styled.div`
       border-color: #888;
     }
   }
-`
+`;
 
-const Board: React.FC = () => {
-  const { pacManPosition, maze, gameStatus, resetGame } = useGameState()
-  const [scale, setScale] = React.useState(0.9)
+const Board = (): JSX.Element => {
+  const { pacManPosition, maze, gameStatus, resetGame } = useGameState();
+  const [scale, setScale] = React.useState(0.9);
 
-  React.useEffect(() => {
-    const updateScale = () => {
-      const vw = Math.min(
-        window.innerWidth,
-        window.innerHeight * (MAZE_WIDTH / MAZE_HEIGHT),
-      )
-      const vh = Math.min(
-        window.innerHeight,
-        window.innerWidth * (MAZE_HEIGHT / MAZE_WIDTH),
-      )
-      const newScale = Math.min(
-        vw / (MAZE_WIDTH * TILE_SIZE),
-        vh / (MAZE_HEIGHT * TILE_SIZE),
-      )
-      setScale(newScale * 0.9) // Add 10% padding
-    }
+  useEffect(() => {
+    const updateScale = (): void => {
+      const vw = Math.min(window.innerWidth, window.innerHeight * (MAZE_WIDTH / MAZE_HEIGHT));
+      const vh = Math.min(window.innerHeight, window.innerWidth * (MAZE_HEIGHT / MAZE_WIDTH));
+      const newScale = Math.min(vw / (MAZE_WIDTH * TILE_SIZE), vh / (MAZE_HEIGHT * TILE_SIZE));
+      setScale(newScale * 0.9); // Add 10% padding
+    };
 
-    window.addEventListener('resize', updateScale)
-    updateScale() // Initial calculation
-    return () => window.removeEventListener('resize', updateScale)
-  }, [])
+    window.addEventListener('resize', updateScale);
+    updateScale(); // Initial calculation
+    return () => window.removeEventListener('resize', updateScale);
+  }, []);
 
   const hasWallAt = (x: number, y: number): boolean => {
-    if (x < 0 || x >= MAZE_WIDTH || y < 0 || y >= MAZE_HEIGHT) return false
-    return maze[y][x] === 1
-  }
+    if (x < 0 || x >= MAZE_WIDTH || y < 0 || y >= MAZE_HEIGHT) return false;
+    return maze[y][x] === 1;
+  };
 
-  const isCorner = (
-    x: number,
-    y: number,
-    side1: boolean,
-    side2: boolean,
-  ): boolean => {
-    return side1 && side2 && !hasWallAt(x, y)
-  }
+  const isCorner = (x: number, y: number, side1: boolean, side2: boolean): boolean =>
+    side1 && side2 && !hasWallAt(x, y);
 
-  const renderMaze = () => {
-    const elements = []
+  const renderMaze = (): JSX.Element[] => {
+    const elements = [];
 
     for (let y = 0; y < MAZE_HEIGHT; y++) {
       for (let x = 0; x < MAZE_WIDTH; x++) {
-        const cellType = maze[y][x]
-        const position = { left: x * TILE_SIZE, top: y * TILE_SIZE }
+        const cellType = maze[y][x];
+        const position = { left: x * TILE_SIZE, top: y * TILE_SIZE };
+
+        const top = !hasWallAt(x, y - 1);
+        const right = !hasWallAt(x + 1, y);
+        const bottom = !hasWallAt(x, y + 1);
+        const left = !hasWallAt(x - 1, y);
 
         switch (cellType) {
           case 1: // Wall
-            const top = !hasWallAt(x, y - 1)
-            const right = !hasWallAt(x + 1, y)
-            const bottom = !hasWallAt(x, y + 1)
-            const left = !hasWallAt(x - 1, y)
-
             elements.push(
               <Wall
                 key={`wall-${x}-${y}`}
@@ -195,31 +180,31 @@ const Board: React.FC = () => {
                 $bottomLeft={isCorner(x - 1, y + 1, left, bottom)}
                 $bottomRight={isCorner(x + 1, y + 1, right, bottom)}
               />,
-            )
-            break
+            );
+            break;
           case 2: // Dot
             elements.push(
               <DotContainer key={`dot-${x}-${y}`} style={position}>
                 <Dot />
               </DotContainer>,
-            )
-            break
+            );
+            break;
           case 3: // Power Pellet
             elements.push(
               <DotContainer key={`power-${x}-${y}`} style={position}>
                 <PowerPellet />
               </DotContainer>,
-            )
-            break
+            );
+            break;
           case 4: // Door
-            elements.push(<Door key={`door-${x}-${y}`} style={position} />)
-            break
+            elements.push(<Door key={`door-${x}-${y}`} style={position} />);
+            break;
         }
       }
     }
 
-    return elements
-  }
+    return elements;
+  };
 
   return (
     <GameContainer>
@@ -227,9 +212,7 @@ const Board: React.FC = () => {
         {renderMaze()}
         <PacMan x={pacManPosition.x} y={pacManPosition.y} />
         {(gameStatus === 'GAME_OVER' || gameStatus === 'VICTORY') && (
-          <GameMessageOverlay
-            className={gameStatus === 'VICTORY' ? 'victory' : 'gameover'}
-          >
+          <GameMessageOverlay className={gameStatus === 'VICTORY' ? 'victory' : 'gameover'}>
             <div>{gameStatus === 'VICTORY' ? 'YOU WIN!' : 'GAME OVER'}</div>
             <button onClick={resetGame}>Play Again</button>
           </GameMessageOverlay>
@@ -237,7 +220,7 @@ const Board: React.FC = () => {
       </BoardContainer>
       <Scoreboard />
     </GameContainer>
-  )
-}
+  );
+};
 
-export default React.memo(Board)
+export default React.memo(Board);

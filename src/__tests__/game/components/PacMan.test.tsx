@@ -1,4 +1,5 @@
 import { render } from '@testing-library/react';
+
 import PacMan from '@components/PacMan';
 
 test('renders PacMan component', () => {

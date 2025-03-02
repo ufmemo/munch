@@ -1,53 +1,50 @@
-import { useEffect } from 'react'
-import { startGameLoop, stopGameLoop } from '@utils/gameLoop'
-import './App.css'
-import './index.css'
-import styled from 'styled-components'
-import Board from '@components/Board'
-import useGameState from '@state/gameState'
-import { keydownHandler } from './game/utils/keyHandler'
+import { JSX, useEffect, useCallback } from 'react';
+import styled from 'styled-components';
+
+import Board from '@components/Board';
+import useGameState from '@state/gameState';
+import { keydownHandler } from '@utils/keyHandler';
+
+import './App.css';
+import './index.css';
 
 // Styled component
 const Container = styled.div`
   text-align: center;
-`
+`;
 
-function App() {
-  const { resetGame, gameStatus } = useGameState()
+const App = (): JSX.Element => {
+  const { resetGame, gameStatus } = useGameState();
 
-  const handleKeyDown = keydownHandler(resetGame, gameStatus)
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent): void => keydownHandler(resetGame, gameStatus)(e),
+    [resetGame, gameStatus],
+  );
 
   useEffect(() => {
-    startGameLoop()
+    window.addEventListener('keydown', handleKeyDown);
     return () => {
-      stopGameLoop()
-    }
-  }, [])
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown)
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [handleKeyDown])
-
-  useEffect(() => {
-    const preventDefault = (e: KeyboardEvent) => {
+    const preventDefault = (e: KeyboardEvent): void => {
       if (['ArrowUp', 'ArrowDown'].includes(e.key)) {
-        e.preventDefault()
+        e.preventDefault();
       }
-    }
-    window.addEventListener('keydown', preventDefault)
+    };
+    window.addEventListener('keydown', preventDefault);
     return () => {
-      window.removeEventListener('keydown', preventDefault)
-    }
-  }, [])
+      window.removeEventListener('keydown', preventDefault);
+    };
+  }, []);
 
   return (
     <Container>
       <Board />
     </Container>
-  )
-}
+  );
+};
 
-export default App
+export default App;

@@ -1,36 +1,38 @@
-import { create } from 'zustand'
-import { wouldCollide } from '../utils/gameLoop'
-import { MAZE_LAYOUT, MAZE_WIDTH, MAZE_HEIGHT } from '@utils/constants'
+import { create } from 'zustand';
 
-type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' | null
-export type GameStatus = 'PLAYING' | 'GAME_OVER' | 'VICTORY'
+import { MAZE_LAYOUT, MAZE_WIDTH, MAZE_HEIGHT } from '@utils/constants';
+
+import { wouldCollide } from '../utils/gameLoop';
+
+type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' | null;
+export type GameStatus = 'PLAYING' | 'GAME_OVER' | 'VICTORY';
 
 interface GameState {
-  score: number
-  lives: number
-  level: number
-  gameStatus: GameStatus
-  pacManPosition: { x: number; y: number }
-  direction: Direction
-  queuedDirection: Direction
-  maze: number[][]
-  remainingDots: number
-  update: () => void
-  resetGame: () => void
-  handleDeath: () => void
+  score: number;
+  lives: number;
+  level: number;
+  gameStatus: GameStatus;
+  pacManPosition: { x: number; y: number };
+  direction: Direction;
+  queuedDirection: Direction;
+  maze: number[][];
+  remainingDots: number;
+  update: () => void;
+  resetGame: () => void;
+  handleDeath: () => void;
 }
 
 // Count initial dots and pellets
 function countInitialDots(): number {
-  let count = 0
+  let count = 0;
   for (let y = 0; y < MAZE_HEIGHT; y++) {
     for (let x = 0; x < MAZE_WIDTH; x++) {
       if (MAZE_LAYOUT[y][x] === 2 || MAZE_LAYOUT[y][x] === 3) {
-        count++
+        count++;
       }
     }
   }
-  return count
+  return count;
 }
 
 const initialState = {
@@ -43,56 +45,56 @@ const initialState = {
   queuedDirection: null as Direction,
   maze: JSON.parse(JSON.stringify(MAZE_LAYOUT)),
   remainingDots: countInitialDots(),
-}
+};
 
 const useGameState = create<GameState>((set) => ({
   ...initialState,
-  update: () => {
+  update: (): void => {
     set((state) => {
-      if (state.gameStatus !== 'PLAYING') return state
+      if (state.gameStatus !== 'PLAYING') return state;
 
       // Get current grid position
-      const x = Math.round(state.pacManPosition.x)
-      const y = Math.round(state.pacManPosition.y)
+      const x = Math.round(state.pacManPosition.x);
+      const y = Math.round(state.pacManPosition.y);
 
-      let updates: Partial<GameState> = {}
+      let updates: Partial<GameState> = {};
 
       // Check if current position has a dot or power pellet
       if (x >= 0 && x < MAZE_WIDTH && y >= 0 && y < MAZE_HEIGHT) {
-        const cell = state.maze[y][x]
+        const cell = state.maze[y][x];
         if (cell === 2 || cell === 3) {
-          const newMaze = [...state.maze]
-          newMaze[y][x] = 0 // Set to empty
-          const points = cell === 2 ? 10 : 50 // 10 points for dots, 50 for power pellets
-          const newRemainingDots = state.remainingDots - 1
+          const newMaze = [...state.maze];
+          newMaze[y][x] = 0; // Set to empty
+          const points = cell === 2 ? 10 : 50; // 10 points for dots, 50 for power pellets
+          const newRemainingDots = state.remainingDots - 1;
 
           updates = {
             score: state.score + points,
             maze: newMaze,
             remainingDots: newRemainingDots,
-          }
+          };
 
           // Check for victory
           if (newRemainingDots === 0) {
-            updates.gameStatus = 'VICTORY'
-            updates.direction = null
-            updates.queuedDirection = null
+            updates.gameStatus = 'VICTORY';
+            updates.direction = null;
+            updates.queuedDirection = null;
           }
         }
       }
-      return updates
-    })
+      return updates;
+    });
   },
-  resetGame: () => {
+  resetGame: (): void => {
     set({
       ...initialState,
       maze: JSON.parse(JSON.stringify(MAZE_LAYOUT)), // Create a fresh deep copy of the maze
       remainingDots: countInitialDots(),
-    })
+    });
   },
-  handleDeath: () => {
+  handleDeath: (): void => {
     set((state) => {
-      const newLives = state.lives - 1
+      const newLives = state.lives - 1;
       if (newLives <= 0) {
         return {
           ...state,
@@ -100,7 +102,7 @@ const useGameState = create<GameState>((set) => ({
           gameStatus: 'GAME_OVER',
           direction: null,
           queuedDirection: null,
-        }
+        };
       }
       return {
         ...state,
@@ -108,31 +110,29 @@ const useGameState = create<GameState>((set) => ({
         pacManPosition: { x: 14, y: 23 },
         direction: null,
         queuedDirection: null,
-      }
-    })
+      };
+    });
   },
-}))
+}));
 
-export function getState() {
-  return useGameState.getState()
+export function getState(): GameState {
+  return useGameState.getState();
 }
 
-export function setState(state: Partial<GameState>) {
-  useGameState.setState(state)
+export function setState(state: Partial<GameState>): void {
+  useGameState.setState(state);
 }
 
-export function setDirection(newDirection: Direction) {
-  const state = getState()
+export function setDirection(newDirection: Direction): void {
+  const state = getState();
 
   if (newDirection === state.direction || newDirection === null) {
-    return
+    return;
   }
 
   // Use a larger threshold for detecting near-grid positions
-  const nearX =
-    Math.abs(state.pacManPosition.x - Math.round(state.pacManPosition.x)) < 0.2
-  const nearY =
-    Math.abs(state.pacManPosition.y - Math.round(state.pacManPosition.y)) < 0.2
+  const nearX = Math.abs(state.pacManPosition.x - Math.round(state.pacManPosition.x)) < 0.2;
+  const nearY = Math.abs(state.pacManPosition.y - Math.round(state.pacManPosition.y)) < 0.2;
 
   // If we're near a grid position and can turn without collision, do it immediately
   if (nearX && nearY && !wouldCollide(state.pacManPosition, newDirection)) {
@@ -143,11 +143,11 @@ export function setDirection(newDirection: Direction) {
         x: Math.round(state.pacManPosition.x),
         y: Math.round(state.pacManPosition.y),
       },
-    })
+    });
   } else {
     // Otherwise queue the direction for later
-    setState({ queuedDirection: newDirection })
+    setState({ queuedDirection: newDirection });
   }
 }
 
-export default useGameState
+export default useGameState;
