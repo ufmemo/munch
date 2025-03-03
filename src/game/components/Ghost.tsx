@@ -90,7 +90,7 @@ const calculateAggressiveness = (
 
 const Ghost: React.FC<GhostProps> = ({ id }) => {
   const ghost = useGameState((state) => state.ghosts.find((g) => g.id === id));
-  const pacmanPosition = useGameState((state) => state.pacManPosition);
+  const pacmanPosition = useGameState((state) => state.pacmanPosition);
 
   if (!ghost) return null;
 

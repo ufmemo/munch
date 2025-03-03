@@ -12,7 +12,7 @@ const ScoreboardContainer = styled.div`
   padding: 16px;
   border: 2px solid #0000ff;
   border-radius: 8px;
-  font-family: 'Silkscreen', cursive;
+  font-family: 'Silkscreen', monospace;
   min-width: 120px;
   z-index: 1000;
 `;

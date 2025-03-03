@@ -20,7 +20,7 @@ interface GameState {
   lives: number;
   level: number;
   gameStatus: GameStatus;
-  pacManPosition: Position;
+  pacmanPosition: Position;
   direction: Direction | null;
   queuedDirection: Direction | null;
   maze: number[][];
@@ -55,7 +55,7 @@ const initialState = {
   lives: GAME_DIFFICULTY.initialLives,
   level: 1,
   gameStatus: GameStatus.READY,
-  pacManPosition: INITIAL_POSITIONS.pacman,
+  pacmanPosition: INITIAL_POSITIONS.pacman,
   direction: null,
   queuedDirection: null,
   maze: JSON.parse(JSON.stringify(MAZE_LAYOUT)),
@@ -109,7 +109,7 @@ const useGameState = create<GameState>((set) => ({
     set({
       maze: JSON.parse(JSON.stringify(MAZE_LAYOUT)),
       remainingDots: countInitialDots(),
-      pacManPosition: { ...INITIAL_POSITIONS.pacman },
+      pacmanPosition: { ...INITIAL_POSITIONS.pacman },
       direction: null,
       queuedDirection: null,
       ghosts: initialState.ghosts.map((ghost) => ({
@@ -141,8 +141,8 @@ const useGameState = create<GameState>((set) => ({
     set((state) => {
       if (state.gameStatus !== GameStatus.PLAYING) return state;
 
-      const x = Math.round(state.pacManPosition.x);
-      const y = Math.round(state.pacManPosition.y);
+      const x = Math.round(state.pacmanPosition.x);
+      const y = Math.round(state.pacmanPosition.y);
 
       let updates: Partial<GameState> = {};
 
@@ -205,8 +205,8 @@ const useGameState = create<GameState>((set) => ({
           return false; // Ghost is respawning, no collision possible
         }
 
-        const dx = Math.abs(ghost.x - state.pacManPosition.x);
-        const dy = Math.abs(ghost.y - state.pacManPosition.y);
+        const dx = Math.abs(ghost.x - state.pacmanPosition.x);
+        const dy = Math.abs(ghost.y - state.pacmanPosition.y);
         const collision = dx < 0.8 && dy < 0.8;
 
         if (collision && ghost.mode === GhostMode.FRIGHTENED) {
@@ -261,7 +261,7 @@ const useGameState = create<GameState>((set) => ({
       return {
         ...state,
         lives: newLives,
-        pacManPosition: { ...INITIAL_POSITIONS.pacman },
+        pacmanPosition: { ...INITIAL_POSITIONS.pacman },
         direction: null,
         queuedDirection: null,
         gameStatus: GameStatus.PLAYING,
@@ -346,7 +346,7 @@ const useGameState = create<GameState>((set) => ({
 
         // Calculate distance to Pacman
         const distanceToPacman =
-          Math.abs(ghost.x - state.pacManPosition.x) + Math.abs(ghost.y - state.pacManPosition.y);
+          Math.abs(ghost.x - state.pacmanPosition.x) + Math.abs(ghost.y - state.pacmanPosition.y);
 
         // Adjust speed based on mode and distance
         let speedMultiplier = 1.0;
@@ -373,7 +373,7 @@ const useGameState = create<GameState>((set) => ({
           newGhost.x = newPosition.x;
           newGhost.y = newPosition.y;
         } else {
-          newGhost.direction = chooseNewGhostDirection(newGhost, state.pacManPosition, state.maze);
+          newGhost.direction = chooseNewGhostDirection(newGhost, state.pacmanPosition, state.maze);
         }
 
         return newGhost;
@@ -407,16 +407,16 @@ export function setDirection(newDirection: Direction): void {
     return;
   }
 
-  const nearX = Math.abs(state.pacManPosition.x - Math.round(state.pacManPosition.x)) < 0.2;
-  const nearY = Math.abs(state.pacManPosition.y - Math.round(state.pacManPosition.y)) < 0.2;
+  const nearX = Math.abs(state.pacmanPosition.x - Math.round(state.pacmanPosition.x)) < 0.2;
+  const nearY = Math.abs(state.pacmanPosition.y - Math.round(state.pacmanPosition.y)) < 0.2;
 
-  if (nearX && nearY && !wouldCollide(state.pacManPosition, newDirection)) {
+  if (nearX && nearY && !wouldCollide(state.pacmanPosition, newDirection)) {
     setState({
       direction: newDirection,
       queuedDirection: null,
-      pacManPosition: {
-        x: Math.round(state.pacManPosition.x),
-        y: Math.round(state.pacManPosition.y),
+      pacmanPosition: {
+        x: Math.round(state.pacmanPosition.x),
+        y: Math.round(state.pacmanPosition.y),
       },
     });
   } else {

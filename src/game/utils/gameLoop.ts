@@ -169,36 +169,36 @@ function gameLoop(time: number): void {
   const moveAmount = speed * deltaTime;
 
   if (state.queuedDirection) {
-    const nearX = Math.abs(state.pacManPosition.x - Math.round(state.pacManPosition.x)) < 0.2;
-    const nearY = Math.abs(state.pacManPosition.y - Math.round(state.pacManPosition.y)) < 0.2;
+    const nearX = Math.abs(state.pacmanPosition.x - Math.round(state.pacmanPosition.x)) < 0.2;
+    const nearY = Math.abs(state.pacmanPosition.y - Math.round(state.pacmanPosition.y)) < 0.2;
 
-    if (nearX && nearY && canTurnAtPosition(state.pacManPosition, state.queuedDirection)) {
+    if (nearX && nearY && canTurnAtPosition(state.pacmanPosition, state.queuedDirection)) {
       setState({
         direction: state.queuedDirection,
         queuedDirection: null,
-        pacManPosition: {
-          x: Math.round(state.pacManPosition.x),
-          y: Math.round(state.pacManPosition.y),
+        pacmanPosition: {
+          x: Math.round(state.pacmanPosition.x),
+          y: Math.round(state.pacmanPosition.y),
         },
       });
     }
   }
 
   if (state.direction) {
-    const newPosition = tryMove(state.pacManPosition, state.direction, moveAmount);
+    const newPosition = tryMove(state.pacmanPosition, state.direction, moveAmount);
     if (newPosition) {
-      setState({ pacManPosition: newPosition });
+      setState({ pacmanPosition: newPosition });
       state.update();
     } else if (
       state.queuedDirection &&
-      canTurnAtPosition(state.pacManPosition, state.queuedDirection)
+      canTurnAtPosition(state.pacmanPosition, state.queuedDirection)
     ) {
       setState({
         direction: state.queuedDirection,
         queuedDirection: null,
-        pacManPosition: {
-          x: Math.round(state.pacManPosition.x),
-          y: Math.round(state.pacManPosition.y),
+        pacmanPosition: {
+          x: Math.round(state.pacmanPosition.x),
+          y: Math.round(state.pacmanPosition.y),
         },
       });
     }

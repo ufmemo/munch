@@ -100,7 +100,7 @@ const GameMessageOverlay = styled.div`
   align-items: center;
   background-color: rgba(0, 0, 0, 0.7);
   z-index: 100;
-  font-family: 'Silkscreen', cursive;
+  font-family: 'Silkscreen', monospace;
   font-size: 48px;
   text-shadow: 2px 2px 4px #000;
 
@@ -129,7 +129,7 @@ const GameMessageOverlay = styled.div`
     margin-top: 20px;
     padding: 10px 20px;
     font-size: 24px;
-    font-family: 'Silkscreen', cursive;
+    font-family: 'Silkscreen', monospace;
     background-color: #333;
     color: white;
     border: 2px solid #666;
@@ -208,23 +208,8 @@ const StartPrompt = styled.div`
   }
 `;
 
-const getOverlayMessage = (gameStatus: GameStatus, level: number): string => {
-  switch (gameStatus) {
-    case GameStatus.VICTORY:
-      return level > GAME_DIFFICULTY.speedLevels.length ? 'YOU WIN!' : 'LEVEL COMPLETE!';
-    case GameStatus.GAME_OVER:
-      return level > GAME_DIFFICULTY.speedLevels.length ? 'CONGRATULATIONS!' : 'GAME OVER';
-    case GameStatus.DYING:
-      return 'OUCH!';
-    case GameStatus.READY:
-      return 'PAC-MAN';
-    default:
-      return 'PAUSED';
-  }
-};
-
 const Board = (): JSX.Element => {
-  const { pacManPosition, maze, gameStatus, level, resetGame, ghosts, countdownValue } =
+  const { pacmanPosition, maze, gameStatus, level, resetGame, ghosts, countdownValue } =
     useGameState();
   const [scale, setScale] = React.useState(0.9);
 
@@ -333,7 +318,7 @@ const Board = (): JSX.Element => {
       case GameStatus.DYING:
         return 'OUCH!';
       case GameStatus.READY:
-        return 'PAC-MAN';
+        return 'Munch!!';
       default:
         return 'PAUSED';
     }
@@ -348,7 +333,7 @@ const Board = (): JSX.Element => {
         <KeyBox>↓</KeyBox>
         <KeyBox>←</KeyBox>
         <KeyBox>→</KeyBox>
-        Move Pac-Man
+        Move Munch!
       </KeyInstruction>
       <KeyInstruction>
         <KeyBox>SPACE</KeyBox>
@@ -362,7 +347,7 @@ const Board = (): JSX.Element => {
     <GameContainer>
       <BoardContainer style={{ transform: `scale(${scale})` }}>
         {renderMaze()}
-        <PacMan x={pacManPosition.x} y={pacManPosition.y} />
+        <PacMan x={pacmanPosition.x} y={pacmanPosition.y} />
         {renderGhosts()}
         {gameStatus !== GameStatus.PLAYING && !countdownValue && (
           <GameMessageOverlay className={getOverlayClass(gameStatus)}>
