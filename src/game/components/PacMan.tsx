@@ -2,7 +2,8 @@ import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
 import useGameState from '@state/gameState';
-import { TILE_SIZE, ANIMATION_SPEEDS } from '@utils/constants';
+import { TILE_SIZE } from '@utils/constants';
+import { GAME_DIFFICULTY } from '@utils/gameControl';
 
 const chomp = keyframes`
   0% {
@@ -54,7 +55,7 @@ const PacManContainer = styled.div<{ $direction: string | null }>`
 
 const PacManMouth = styled.path`
   fill: black;
-  animation: ${chomp} ${ANIMATION_SPEEDS.pacmanChomp}s linear infinite;
+  animation: ${chomp} ${GAME_DIFFICULTY.timings.animationSpeeds.pacmanChomp}s linear infinite;
 `;
 
 const PacMan: React.FC<{ x: number; y: number }> = ({ x, y }) => {

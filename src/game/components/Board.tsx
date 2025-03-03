@@ -8,6 +8,8 @@ import { GameStatus } from '@game/types/gameStatus';
 import useGameState from '@state/gameState';
 import { TILE_SIZE, MAZE_WIDTH, MAZE_HEIGHT, COLORS, MazeCell } from '@utils/constants';
 
+import { GAME_DIFFICULTY } from '../utils/gameControl';
+
 const BoardContainer = styled.div`
   width: ${MAZE_WIDTH * TILE_SIZE}px;
   height: ${MAZE_HEIGHT * TILE_SIZE}px;
@@ -119,6 +121,10 @@ const GameMessageOverlay = styled.div`
     background-color: rgba(0, 0, 0, 0.3);
   }
 
+  &.ready {
+    color: yellow;
+  }
+
   button {
     margin-top: 20px;
     padding: 10px 20px;
@@ -138,8 +144,88 @@ const GameMessageOverlay = styled.div`
   }
 `;
 
+const CountdownOverlay = styled(GameMessageOverlay)`
+  font-size: 72px;
+  color: yellow;
+  background-color: rgba(0, 0, 0, 0.5);
+  animation: scaleIn 0.5s ease-out;
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+`;
+
+const InstructionsText = styled.div`
+  font-size: 20px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: white;
+  text-align: center;
+  line-height: 1.5;
+`;
+
+const KeyInstruction = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 8px 0;
+  font-size: 18px;
+`;
+
+const KeyBox = styled.span`
+  display: inline-block;
+  background-color: #444;
+  border: 2px solid #666;
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin: 0 8px;
+  color: white;
+`;
+
+const StartPrompt = styled.div`
+  margin-top: 30px;
+  font-size: 24px;
+  color: #ffff00;
+  animation: blink 1.5s infinite;
+
+  @keyframes blink {
+    0% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.3;
+    }
+  }
+`;
+
+const getOverlayMessage = (gameStatus: GameStatus, level: number): string => {
+  switch (gameStatus) {
+    case GameStatus.VICTORY:
+      return level > GAME_DIFFICULTY.speedLevels.length ? 'YOU WIN!' : 'LEVEL COMPLETE!';
+    case GameStatus.GAME_OVER:
+      return level > GAME_DIFFICULTY.speedLevels.length ? 'CONGRATULATIONS!' : 'GAME OVER';
+    case GameStatus.DYING:
+      return 'OUCH!';
+    case GameStatus.READY:
+      return 'PAC-MAN';
+    default:
+      return 'PAUSED';
+  }
+};
+
 const Board = (): JSX.Element => {
-  const { pacManPosition, maze, gameStatus, resetGame, ghosts } = useGameState();
+  const { pacManPosition, maze, gameStatus, level, resetGame, ghosts, countdownValue } =
+    useGameState();
   const [scale, setScale] = React.useState(0.9);
 
   useEffect(() => {
@@ -222,7 +308,7 @@ const Board = (): JSX.Element => {
     ghosts.map((ghost) => <Ghost key={`ghost-${ghost.id}`} id={ghost.id} />);
 
   // Get appropriate class for message overlay
-  const getOverlayClass = (): string => {
+  const getOverlayClass = (gameStatus: GameStatus): string => {
     switch (gameStatus) {
       case GameStatus.VICTORY:
         return 'victory';
@@ -230,24 +316,47 @@ const Board = (): JSX.Element => {
         return 'gameover';
       case GameStatus.DYING:
         return 'dying';
+      case GameStatus.READY:
+        return 'ready';
       default:
         return 'paused';
     }
   };
 
   // Get appropriate message for overlay
-  const getOverlayMessage = (): string => {
+  const getOverlayMessage = (gameStatus: GameStatus, level: number): string => {
     switch (gameStatus) {
       case GameStatus.VICTORY:
-        return 'YOU WIN!';
+        return level > GAME_DIFFICULTY.speedLevels.length ? 'YOU WIN!' : 'LEVEL COMPLETE!';
       case GameStatus.GAME_OVER:
-        return 'GAME OVER';
+        return level > GAME_DIFFICULTY.speedLevels.length ? 'CONGRATULATIONS!' : 'GAME OVER';
       case GameStatus.DYING:
         return 'OUCH!';
+      case GameStatus.READY:
+        return 'PAC-MAN';
       default:
         return 'PAUSED';
     }
   };
+
+  // Render instructions menu
+  const renderInstructions = (): JSX.Element => (
+    <>
+      <InstructionsText>HOW TO PLAY</InstructionsText>
+      <KeyInstruction>
+        <KeyBox>↑</KeyBox>
+        <KeyBox>↓</KeyBox>
+        <KeyBox>←</KeyBox>
+        <KeyBox>→</KeyBox>
+        Move Pac-Man
+      </KeyInstruction>
+      <KeyInstruction>
+        <KeyBox>SPACE</KeyBox>
+        Pause Game
+      </KeyInstruction>
+      <StartPrompt>PRESS ENTER TO START</StartPrompt>
+    </>
+  );
 
   return (
     <GameContainer>
@@ -255,14 +364,18 @@ const Board = (): JSX.Element => {
         {renderMaze()}
         <PacMan x={pacManPosition.x} y={pacManPosition.y} />
         {renderGhosts()}
-        {gameStatus !== GameStatus.PLAYING && (
-          <GameMessageOverlay className={getOverlayClass()}>
-            <div>{getOverlayMessage()}</div>
-            {(gameStatus === GameStatus.GAME_OVER || gameStatus === GameStatus.VICTORY) && (
+        {gameStatus !== GameStatus.PLAYING && !countdownValue && (
+          <GameMessageOverlay className={getOverlayClass(gameStatus)}>
+            <div>{getOverlayMessage(gameStatus, level)}</div>
+            {gameStatus === GameStatus.READY && renderInstructions()}
+            {(gameStatus === GameStatus.GAME_OVER ||
+              (gameStatus === GameStatus.VICTORY &&
+                level > GAME_DIFFICULTY.speedLevels.length)) && (
               <button onClick={resetGame}>Play Again</button>
             )}
           </GameMessageOverlay>
         )}
+        {countdownValue && <CountdownOverlay>{countdownValue}</CountdownOverlay>}
       </BoardContainer>
       <Scoreboard />
     </GameContainer>

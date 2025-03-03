@@ -1,4 +1,5 @@
 export const GameStatus = {
+  READY: 'READY',
   PLAYING: 'PLAYING',
   GAME_OVER: 'GAME_OVER',
   VICTORY: 'VICTORY',
@@ -15,3 +16,12 @@ export const GhostMode = {
 } as const;
 
 export type GhostMode = (typeof GhostMode)[keyof typeof GhostMode];
+
+export const GhostId = {
+  BLINKY: 'BLINKY',
+  PINKY: 'PINKY',
+  INKY: 'INKY',
+  CLYDE: 'CLYDE',
+} as const;
+
+export type GhostId = (typeof GhostId)[keyof typeof GhostId];

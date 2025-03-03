@@ -8,6 +8,13 @@ export const keydownHandler =
   (event: KeyboardEvent): void => {
     const state = getState();
 
+    if (gameStatus === GameStatus.READY) {
+      if (event.key === 'Enter') {
+        state.startGame();
+        return;
+      }
+    }
+
     if (gameStatus === GameStatus.GAME_OVER || gameStatus === GameStatus.VICTORY) {
       if (event.key === 'Enter' || event.key === ' ') {
         resetGame();

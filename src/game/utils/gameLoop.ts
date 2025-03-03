@@ -2,10 +2,11 @@ import { GameStatus } from '@game/types/gameStatus';
 import { Direction } from '@game/types/movement';
 import { Position } from '@game/types/position';
 import { getState, setState } from '@state/gameState';
-import { MAZE_WIDTH, MAZE_HEIGHT, GAME_CONFIG, MazeCell } from '@utils/constants';
+import { MAZE_WIDTH, MAZE_HEIGHT, MazeCell } from '@utils/constants';
+import { GAME_DIFFICULTY } from '@utils/gameControl';
 
 let lastTime = 0;
-let speed = GAME_CONFIG.speedLevels[0].pacman;
+let speed = GAME_DIFFICULTY.speedLevels[0].pacman;
 
 function checkCollision(pos: Position, direction: Direction | null = null): boolean {
   const state = getState();
@@ -58,7 +59,7 @@ function checkCollision(pos: Position, direction: Direction | null = null): bool
     if (checkY >= MAZE_HEIGHT) checkY = 0;
 
     const cell = state.maze[checkY][checkX];
-    return cell === MazeCell.WALL || cell === MazeCell.DOOR;
+    return cell === MazeCell.WALL; // Removed DOOR from collision check
   });
 }
 
@@ -145,6 +146,12 @@ function canTurnAtPosition(pos: Position, direction: Direction): boolean {
   return !wouldCollide(testPos, direction);
 }
 
+function adjustSpeedForLevel(): void {
+  const state = getState();
+  const speedLevel = Math.min(state.level - 1, GAME_DIFFICULTY.speedLevels.length - 1);
+  speed = GAME_DIFFICULTY.speedLevels[speedLevel].pacman;
+}
+
 function gameLoop(time: number): void {
   const deltaTime = Math.min((time - lastTime) / 1000, 0.1);
   lastTime = time;
@@ -155,6 +162,9 @@ function gameLoop(time: number): void {
     requestAnimationFrame(gameLoop);
     return;
   }
+
+  // Adjust speed based on current level
+  adjustSpeedForLevel();
 
   const moveAmount = speed * deltaTime;
 
@@ -205,8 +215,8 @@ export function startGameLoop(): void {
 
 export function setSpeed(newSpeed: number): void {
   speed = Math.max(
-    GAME_CONFIG.speedLevels[0].pacman,
-    Math.min(GAME_CONFIG.speedLevels[2].pacman, newSpeed),
+    GAME_DIFFICULTY.speedLevels[0].pacman,
+    Math.min(GAME_DIFFICULTY.speedLevels[2].pacman, newSpeed),
   );
 }
 

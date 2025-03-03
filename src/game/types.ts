@@ -9,6 +9,7 @@ export interface GhostState {
   color: string;
   speed: number;
   mode: GhostMode;
+  respawnTimer?: number | null; // Timer for ghost respawn/materliaze/rejuvenate)
 }
 
 export interface GameConfig {

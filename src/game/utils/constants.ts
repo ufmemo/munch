@@ -1,4 +1,6 @@
 import { GameConfig } from '../types';
+
+import { GAME_DIFFICULTY } from './gameControl';
 export * from './mazeConstants';
 
 export const TILE_SIZE = 24;
@@ -47,25 +49,19 @@ export const MAZE_LAYOUT = [
 export const MAZE_WIDTH = MAZE_LAYOUT[0].length;
 export const MAZE_HEIGHT = MAZE_LAYOUT.length;
 
+// Export game config using the centralized settings
 export const GAME_CONFIG: GameConfig = {
-  initialLives: 3,
-  baseScore: {
-    dot: 10,
-    powerPellet: 50,
-    ghost: 200,
-  },
-  speedLevels: [
-    { pacman: 6, ghost: 4.5 }, // Level 1
-    { pacman: 7, ghost: 5.5 }, // Level 2
-    { pacman: 8, ghost: 6.5 }, // Level 3
-  ],
+  initialLives: GAME_DIFFICULTY.initialLives,
+  baseScore: GAME_DIFFICULTY.baseScores,
+  speedLevels: GAME_DIFFICULTY.speedLevels,
 };
 
 // Animation constants
-export const ANIMATION_SPEEDS = {
-  pacmanChomp: 0.25, // seconds
-  ghostFloat: 1.5, // seconds
-  deathSequence: 1, // seconds
+export const ANIMATION_SPEEDS = GAME_DIFFICULTY.timings.animationSpeeds;
+
+export const GHOST_STATES = {
+  FRIGHTENED_DURATION: GAME_DIFFICULTY.timings.frightenedDuration,
+  RESPAWN_DURATION: GAME_DIFFICULTY.timings.respawnDuration,
 } as const;
 
 // CSS Colors
@@ -80,5 +76,6 @@ export const COLORS = {
     inky: '#00FFFF', // Cyan
     clyde: '#FFB851', // Orange
     frightened: '#0000BB', // Blue
+    frightenedFlash: '#FFFFFF', // White flash before ending frightened mode
   },
 } as const;

@@ -24,5 +24,10 @@ export const MAZE_HEIGHT = MAZE_LAYOUT.length;
 // Starting positions
 export const INITIAL_POSITIONS = {
   pacman: { x: 14, y: 23 },
-  ghost: { x: 14, y: 11 },
+  ghosts: [
+    { x: 14, y: 11 }, // Center top - Red ghost
+    { x: 13, y: 14 }, // Left - Pink ghost
+    { x: 14, y: 14 }, // Center - Cyan ghost
+    { x: 15, y: 14 }, // Right - Orange ghost
+  ],
 } as const;
